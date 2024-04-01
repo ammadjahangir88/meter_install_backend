@@ -1,6 +1,6 @@
 class V1::DiscosController < ApplicationController
     before_action :set_disco, only: [:show, :update, :destroy]
-  
+    
     # GET /v1/discos
    def index
     discos = Disco.includes(divisions: { subdivisions: :meters }).all
@@ -62,5 +62,21 @@ class V1::DiscosController < ApplicationController
       def disco_params
         params.require(:disco).permit(:name)
       end
+     
+
+  def authenticate_request!
+    header = request.headers['Authorization']
+    if header && header.split(' ').first == 'JWT'
+      token = header.split(' ').last
+      begin
+        decoded_token = JWT.decode(token, 'your_secret_key', true, algorithm: 'HS256')
+        @current_user = User.find(decoded_token.first['user_id'])
+      rescue JWT::DecodeError => e
+        render json: { message: 'Invalid token' }, status: :unauthorized
+      end
+    else
+      render json: { message: 'Authorization header missing' }, status: :unauthorized
+    end
+  end
   end
   
