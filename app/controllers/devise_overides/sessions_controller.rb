@@ -10,7 +10,7 @@ class DeviseOverides::SessionsController < Devise::SessionsController
       sign_in(resource_name, resource)
 
       # Generate token with expiration time
-      token = JWT.encode({ user_id: user.id, exp: 15.minutes.from_now.to_i }, 'your_secret_key', 'HS256')
+      token = JWT.encode({ user_id: user.id, exp: 1.days.from_now.to_i }, 'your_secret_key', 'HS256')
 
       render json: { success: true, message: "Login successful", user: user, token: token }, status: :ok
     else

@@ -18,7 +18,14 @@ Rails.application.routes.draw do
       get "show/user", to: "users#show"
       # registrations: 'api/v1/registrations'
     end
+    resources :divisions
+    resources :subdivisions
     resources :discos
+    get "all_discos", to: "discos#all_discos"
+    get "all_divisions", to: "divisions#index"
+   
+    
+
   end 
  
 end

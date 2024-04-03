@@ -1,32 +1,146 @@
-require_relative "boot"
-
-require "rails/all"
-
-# Require the gems listed in Gemfile, including any gems
-# you've limited to :test, :development, or :production.
-Bundler.require(*Rails.groups)
-
-module MeterInstall
-  class Application < Rails::Application
-    # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.1
-
-    # Please, add to the `ignore` list any other `lib` subdirectories that do
-    # not contain `.rb` files, or that should not be reloaded or eager loaded.
-    # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w(assets tasks))
-
-    # Configuration for the application, engines, and railties goes here.
-    #
-    # These settings can be overridden in specific environments using the files
-    # in config/environments, which are processed later.
-    #
-    # config.time_zone = "Central Time (US & Canada)"
-    # config.eager_load_paths << Rails.root.join("extras")
-
-    # Only loads a smaller set of middleware suitable for API only apps.
-    # Middleware like session, flash, cookies can be added back manually.
-    # Skip views, helpers and assets when generating a new resource.
-    config.api_only = true
-  end
-end
+[
+    {
+        "id": 1,
+        "name": "Disco 1",
+        "created_at": "2024-04-03T12:36:07.405Z",
+        "updated_at": "2024-04-03T12:36:07.405Z",
+        "regions": [
+            {
+                "id": 1,
+                "name": "Region A",
+                "divisions": [
+                    {
+                        "id": 1,
+                        "name": "Division X",
+                        "subdivisions": [
+                            {
+                                "id": 1,
+                                "name": "Subdivision Alpha",
+                                "meters": [
+                                    {
+                                        "id": 1,
+                                        "NEW_METER_NUMBER": "001",
+                                        "reference_no": "REF001",
+                                        "status": "Active",
+                                        "old_meter_no": null,
+                                        "old_meter_reading": null,
+                                        "new_meter_reading": null,
+                                        "connection_type": null,
+                                        "bill_month": null,
+                                        "longitude": null,
+                                        "latitude": null,
+                                        "meter_type": null,
+                                        "kwh_mf": null,
+                                        "sanction_load": null,
+                                        "full_name": null,
+                                        "address": null,
+                                        "qc_check": false,
+                                        "APPLICATION_NO": null,
+                                        "GREEN_METER": null,
+                                        "TELCO": null,
+                                        "SIM_NO": null,
+                                        "SIGNAL_STRENGTH": null,
+                                        "PICTURE_UPLOAD": null
+                                    }
+                                ]
+                            },
+                            {
+                                "id": 2,
+                                "name": "Subdivision Beta",
+                                "meters": [
+                                    {
+                                        "id": 2,
+                                        "NEW_METER_NUMBER": "002",
+                                        "reference_no": "REF002",
+                                        "status": "Inactive",
+                                        "old_meter_no": null,
+                                        "old_meter_reading": null,
+                                        "new_meter_reading": null,
+                                        "connection_type": null,
+                                        "bill_month": null,
+                                        "longitude": null,
+                                        "latitude": null,
+                                        "meter_type": null,
+                                        "kwh_mf": null,
+                                        "sanction_load": null,
+                                        "full_name": null,
+                                        "address": null,
+                                        "qc_check": false,
+                                        "APPLICATION_NO": null,
+                                        "GREEN_METER": null,
+                                        "TELCO": null,
+                                        "SIM_NO": null,
+                                        "SIGNAL_STRENGTH": null,
+                                        "PICTURE_UPLOAD": null
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "id": 2,
+                        "name": "Division Y",
+                        "subdivisions": [
+                            {
+                                "id": 3,
+                                "name": "Subdivision Gamma",
+                                "meters": [
+                                    {
+                                        "id": 3,
+                                        "NEW_METER_NUMBER": "003",
+                                        "reference_no": "REF003",
+                                        "status": "Active",
+                                        "old_meter_no": null,
+                                        "old_meter_reading": null,
+                                        "new_meter_reading": null,
+                                        "connection_type": null,
+                                        "bill_month": null,
+                                        "longitude": null,
+                                        "latitude": null,
+                                        "meter_type": null,
+                                        "kwh_mf": null,
+                                        "sanction_load": null,
+                                        "full_name": null,
+                                        "address": null,
+                                        "qc_check": false,
+                                        "APPLICATION_NO": null,
+                                        "GREEN_METER": null,
+                                        "TELCO": null,
+                                        "SIM_NO": null,
+                                        "SIGNAL_STRENGTH": null,
+                                        "PICTURE_UPLOAD": null
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": 2,
+                "name": "Region B",
+                "divisions": [
+                    {
+                        "id": 3,
+                        "name": "Division Z",
+                        "subdivisions": []
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "name": "Disco 2",
+        "created_at": "2024-04-03T12:36:07.420Z",
+        "updated_at": "2024-04-03T12:36:07.420Z",
+        "regions": [
+            {
+                "id": 3,
+                "name": "Region C",
+                "divisions": []
+            }
+        ]
+    },
+    
+]

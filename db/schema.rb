@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_04_01_083607) do
+ActiveRecord::Schema[7.1].define(version: 2024_04_03_122656) do
   create_table "discos", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.datetime "created_at", null: false
@@ -19,16 +19,14 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_01_083607) do
 
   create_table "divisions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
-    t.bigint "disco_id"
+    t.bigint "region_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["disco_id"], name: "index_divisions_on_disco_id"
+    t.index ["region_id"], name: "index_divisions_on_region_id"
   end
 
   create_table "meters", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "meter_no", null: false
+    t.string "NEW_METER_NUMBER", null: false
     t.string "reference_no", null: false
     t.string "status"
     t.string "old_meter_no"
@@ -45,7 +43,23 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_01_083607) do
     t.text "address"
     t.boolean "qc_check", default: false
     t.bigint "subdivision_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "APPLICATION_NO"
+    t.string "GREEN_METER"
+    t.string "TELCO"
+    t.string "SIM_NO"
+    t.string "SIGNAL_STRENGTH"
+    t.string "PICTURE_UPLOAD"
     t.index ["subdivision_id"], name: "index_meters_on_subdivision_id"
+  end
+
+  create_table "regions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name"
+    t.bigint "disco_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["disco_id"], name: "index_regions_on_disco_id"
   end
 
   create_table "subdivisions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -70,7 +84,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_01_083607) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
-  add_foreign_key "divisions", "discos"
+  add_foreign_key "divisions", "regions"
   add_foreign_key "meters", "subdivisions"
+  add_foreign_key "regions", "discos"
   add_foreign_key "subdivisions", "divisions"
 end

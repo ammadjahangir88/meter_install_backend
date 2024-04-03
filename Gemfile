@@ -31,8 +31,10 @@ gem "tzinfo-data", platforms: %i[ mswin mswin64 mingw x64_mingw jruby ]
 gem "bootsnap", require: false
 
 gem 'pry', '~> 0.10.3'
-
+gem 'faker', '~> 2.18', require: false
 gem 'devise-jwt'
+gem 'will_paginate'
+
 
 gem 'jsonapi-serializer'
 

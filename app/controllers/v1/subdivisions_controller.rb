@@ -3,9 +3,16 @@ class V1::SubdivisionsController < ApplicationController
   
     # GET /v1/subdivisions
     def index
-      @subdivisions = Subdivision.all
-      render json: @subdivisions, status: :ok
+      @subdivisions = Subdivision.includes(:division).all
+      divisions_json = @subdivisions.map do |subdivision|
+        {
+          id: subdivision.id,
+          name: subdivision.name,
+          division: subdivision.division.name 
+        }
     end
+    render json: divisions_json, status: :ok
+  end
   
     # GET /v1/subdivisions/:id
     def show
@@ -47,6 +54,21 @@ class V1::SubdivisionsController < ApplicationController
       # Only allow a trusted parameter "white list" through.
       def subdivision_params
         params.require(:subdivision).permit(:name, :division_id)
+      end
+
+      def authenticate_request!
+        header = request.headers['Authorization']
+        if header && header.split(' ').first == 'JWT'
+          token = header.split(' ').last
+          begin
+            decoded_token = JWT.decode(token, 'your_secret_key', true, algorithm: 'HS256')
+            @current_user = User.find(decoded_token.first['user_id'])
+          rescue JWT::DecodeError => e
+            render json: { message: 'Invalid token' }, status: :unauthorized
+          end
+        else
+          render json: { message: 'Authorization header missing' }, status: :unauthorized
+        end
       end
   end
 

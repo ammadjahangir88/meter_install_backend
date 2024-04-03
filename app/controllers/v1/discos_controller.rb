@@ -2,24 +2,35 @@ class V1::DiscosController < ApplicationController
     before_action :set_disco, only: [:show, :update, :destroy]
     
     # GET /v1/discos
-   def index
-    discos = Disco.includes(divisions: { subdivisions: :meters }).all
-    render json: discos, include: { 
-      divisions: { 
-        include: { 
-          subdivisions: { 
-            include: { 
-              meters: {
-                except: [:created_at, :updated_at, :subdivision_id]
-              }
-            }, 
-            except: [:created_at, :updated_at, :division_id]
-          }
-        }, 
-        except: [:created_at, :updated_at, :disco_id]
+    def index
+      discos = Disco.includes(regions: { divisions: { subdivisions: :meters } }).all
+      render json: discos, include: { 
+        regions: { 
+          include: { 
+            divisions: {
+              include: {
+                subdivisions: {
+                  include: {
+                    meters: {
+                      except: [:created_at, :updated_at, :subdivision_id]
+                    }
+                  },
+                  except: [:created_at, :updated_at, :division_id]
+                }
+              },
+              except: [:created_at, :updated_at, :region_id]
+            }
+          },
+          except: [:created_at, :updated_at, :disco_id]
+        }
       }
-    }
-  end
+    end
+    
+  def all_discos
+    @discos=Disco.all
+    render json: @discos, status: :ok
+
+  end 
   
     # GET /v1/discos/:id
     def show
