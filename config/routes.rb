@@ -20,7 +20,13 @@ Rails.application.routes.draw do
     end
     resources :divisions
     resources :subdivisions
-    resources :discos
+    resources :discos do
+      collection do
+        delete "delete_regions", to: "discos#delete_regions"
+        delete "delete_divisions", to: "discos#delete_divisions"
+        delete "delete_subdivisions", to: "discos#delete_subdivisions"
+      end
+    end
     get "all_discos", to: "discos#all_discos"
     get "all_divisions", to: "divisions#index"
    

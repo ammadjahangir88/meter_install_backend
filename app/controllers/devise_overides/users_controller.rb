@@ -9,13 +9,15 @@ class  DeviseOverides::UsersController < Devise::RegistrationsController
 
   def create
     binding.pry
-
     @user = User.new(user_params)
-      if @user.save
-        render json: { user: @user }
-      else
-        respond_with_error "Invalid data", :not_found
-      end
+    if @user.save
+      render json: { user: @user }
+    else
+      render json: { error: @user.errors.full_messages }, status: :unprocessable_entity
+    end
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
+
   end
 
   private
