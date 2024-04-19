@@ -63,22 +63,22 @@ class V1::DiscosController < ApplicationController
       head :no_content
     end
     def delete_regions
-      binding.pry
-      region_ids = params[:region_ids]
+      region_ids = params[:ids]
       Region.where(id: region_ids).destroy_all
       head :no_content
     end
   
     # DELETE /v1/divisions
     def delete_divisions
-      division_ids = params[:division_ids]
+      binding.pry
+      division_ids = params[:ids]
       Division.where(id: division_ids).destroy_all
       head :no_content
     end
   
     # DELETE /v1/subdivisions
     def delete_subdivisions
-      subdivision_ids = params[:subdivision_ids]
+      subdivision_ids = params[:ids]
       Subdivision.where(id: subdivision_ids).destroy_all
       head :no_content
     end
