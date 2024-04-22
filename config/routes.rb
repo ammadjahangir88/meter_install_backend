@@ -19,9 +19,17 @@ Rails.application.routes.draw do
       # registrations: 'api/v1/registrations'
     end
     resources :divisions
+    resources :meters do
+      collection do
+        post 'import'
+        post 'export'
+      end
+    end
+  
     resources :subdivisions
     resources :discos do
       collection do
+        delete "delete_discos", to: "discos#delete_discos"
         delete "delete_regions", to: "discos#delete_regions"
         delete "delete_divisions", to: "discos#delete_divisions"
         delete "delete_subdivisions", to: "discos#delete_subdivisions"
@@ -29,6 +37,8 @@ Rails.application.routes.draw do
     end
     get "all_discos", to: "discos#all_discos"
     get "all_divisions", to: "divisions#index"
+
+    
    
     
 

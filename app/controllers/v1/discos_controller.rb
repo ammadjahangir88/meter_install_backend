@@ -62,7 +62,14 @@ class V1::DiscosController < ApplicationController
       @disco.destroy
       head :no_content
     end
+    def delete_discos
+     binding.pry
+      disco_ids = params[:ids]
+      Disco.where(id: disco_ids).destroy_all
+      head :no_content
+    end
     def delete_regions
+      binding.pry
       region_ids = params[:ids]
       Region.where(id: region_ids).destroy_all
       head :no_content
@@ -70,7 +77,7 @@ class V1::DiscosController < ApplicationController
   
     # DELETE /v1/divisions
     def delete_divisions
-      binding.pry
+    
       division_ids = params[:ids]
       Division.where(id: division_ids).destroy_all
       head :no_content
