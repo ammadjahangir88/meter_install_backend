@@ -39,6 +39,7 @@ class V1::DiscosController < ApplicationController
   
     # POST /v1/discos
     def create
+    
       @disco = Disco.new(disco_params)
   
       if @disco.save
@@ -63,13 +64,13 @@ class V1::DiscosController < ApplicationController
       head :no_content
     end
     def delete_discos
-     binding.pry
+    
       disco_ids = params[:ids]
       Disco.where(id: disco_ids).destroy_all
       head :no_content
     end
     def delete_regions
-      binding.pry
+    
       region_ids = params[:ids]
       Region.where(id: region_ids).destroy_all
       head :no_content

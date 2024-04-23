@@ -113,6 +113,8 @@ GEM
       i18n (>= 1.8.11, < 2)
     globalid (1.2.1)
       activesupport (>= 6.1)
+    groupdate (6.4.0)
+      activesupport (>= 6.1)
     i18n (1.14.4)
       concurrent-ruby (~> 1.0)
     io-console (0.7.2)
@@ -242,6 +244,7 @@ DEPENDENCIES
   devise (~> 4.9, >= 4.9.3)
   devise-jwt
   faker (~> 2.18)
+  groupdate
   jsonapi-serializer
   mysql2 (~> 0.5)
   pry (~> 0.10.3)

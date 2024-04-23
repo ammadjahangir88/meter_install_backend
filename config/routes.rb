@@ -1,5 +1,4 @@
 Rails.application.routes.draw do
- 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -9,7 +8,6 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "posts#index"
 
-    
   namespace :v1 do
     devise_for :users, controllers: { registrations: 'devise_overides/users',
                                       sessions: 'devise_overides/sessions',
@@ -23,10 +21,12 @@ Rails.application.routes.draw do
       collection do
         post 'import'
         post 'export'
+        get 'dashboard' # This is the new route for the dashboard API
       end
     end
-  
+
     resources :subdivisions
+    resources :regions
     resources :discos do
       collection do
         delete "delete_discos", to: "discos#delete_discos"
@@ -37,11 +37,9 @@ Rails.application.routes.draw do
     end
     get "all_discos", to: "discos#all_discos"
     get "all_divisions", to: "divisions#index"
+    get 'divisions/:id/meters', to: 'divisions#meters'
 
-    
-   
-    
-
-  end 
- 
+    # Optionally, if you need a root for the API:
+    # root to: 'home#index'
+  end
 end

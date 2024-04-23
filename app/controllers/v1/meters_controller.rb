@@ -1,6 +1,22 @@
 class V1::MetersController < ApplicationController
     before_action :set_meter, only: [:show, :update, :destroy]
     require 'csv'
+    def dashboard
+      meters_with_divisions = Meter.joins(subdivision: :division)
+      division_data = meters_with_divisions.group('divisions.id').count
+      status_data = Meter.group(:status).count
+      
+      # Mapping data for frontend pie charts
+      division_pie_data = division_data.map { |id, count| { name: Division.find(id).name, value: count } }
+      status_pie_data = status_data.map { |status, count| { name: status, value: count } }
+    
+      render json: {
+        divisionData: division_pie_data,
+        statusData: status_pie_data
+      }, status: :ok
+    end
+    
+    
     # GET /v1/meters
     def index
       @meters = Meter.all

@@ -1,5 +1,5 @@
 class Meter < ApplicationRecord
-    belongs_to :subdivision, optional: true
+    belongs_to :subdivision
   
     # Defining custom getter methods for attributes stored in uppercase or unconventional formats in the database
     def application_no
