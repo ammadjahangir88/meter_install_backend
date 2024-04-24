@@ -1,45 +1,48 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  # Health check route
   get "up" => "rails/health#show", as: :rails_health_check
 
-  # Defines the root path route ("/")
-  # root "posts#index"
-
   namespace :v1 do
-    devise_for :users, controllers: { registrations: 'devise_overides/users',
-                                      sessions: 'devise_overides/sessions',
-                                      passwords: 'devise_overides/passwords'}
+    # Devise routes for user authentication
+    devise_for :users, controllers: {
+      registrations: 'devise_overrides/users',
+      sessions: 'devise_overrides/sessions',
+      passwords: 'devise_overrides/passwords'
+    }
     devise_scope :user do
       get "show/user", to: "users#show"
-      # registrations: 'api/v1/registrations'
-    end
-    resources :divisions
-    resources :meters do
-      collection do
-        post 'import'
-        post 'export'
-        get 'dashboard' # This is the new route for the dashboard API
-      end
     end
 
+    # Resources and nested routes
+    resources :divisions
     resources :subdivisions
     resources :regions
     resources :discos do
       collection do
-        delete "delete_discos", to: "discos#delete_discos"
-        delete "delete_regions", to: "discos#delete_regions"
-        delete "delete_divisions", to: "discos#delete_divisions"
-        delete "delete_subdivisions", to: "discos#delete_subdivisions"
+        delete "delete_discos"
+        delete "delete_regions"
+        delete "delete_divisions"
+        delete "delete_subdivisions"
       end
     end
-    get "all_discos", to: "discos#all_discos"
-    get "all_divisions", to: "divisions#index"
-    get 'divisions/:id/meters', to: 'divisions#meters'
 
-    # Optionally, if you need a root for the API:
-    # root to: 'home#index'
+    # Additional routes for discos
+    get "all_discos", to: "discos#all_discos"
+    get "divisions/:id/meters", to: "divisions#meters", as: 'division_meters'
+
+    # Meters routes ensuring export and import are correctly handled
+    resources :meters do
+      collection do
+        post 'import'
+        post 'export'
+        get 'dashboard'
+      end
+    end
+
+    # Specialized meter route by division
+    get 'meters/by_division/:division_id', to: 'meters#meters_by_division', as: 'meters_by_division'
   end
+
+  # Optionally, set a root for the API if needed
+  # root to: 'home#index'
 end
