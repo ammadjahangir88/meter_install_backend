@@ -2,19 +2,31 @@ class V1::MetersController < ApplicationController
   before_action :set_meter, only: [:show, :update, :destroy]
   require 'csv'
 
-  # Dashboard analytics data
   def dashboard
     meters_with_divisions = Meter.joins(subdivision: :division)
     division_data = meters_with_divisions.group('divisions.id').count
     status_data = Meter.group(:METER_STATUS).count
-    
-    # Mapping data for frontend pie charts
-    division_pie_data = division_data.map { |id, count| { name: Division.find(id).name, value: count } }
-    status_pie_data = status_data.map { |status, count| { name: status, value: count } }
+    tariff_data = Meter.group(:CONNECTION_TYPE).count
+    telecom_data = Meter.group(:TELCO).count
   
+    # Improve mapping data for frontend pie charts to include division IDs
+    division_pie_data = division_data.map do |id, count|
+      division = Division.find(id)
+      {
+        id: division.id,  # Include the division ID
+        name: division.name,  # Include the division name
+        value: count  # Include the count of meters
+      }
+    end
+    status_pie_data = status_data.map { |status, count| { name: status, value: count } }
+    tariff_pie_data = tariff_data.map { |tariff, count| { name: tariff, value: count } }
+    telecom_pie_data = telecom_data.map { |telco, count| { name: telco, value: count } }
+    
     render json: {
       divisionData: division_pie_data,
-      statusData: status_pie_data
+      statusData: status_pie_data,
+      tariffData: tariff_pie_data,
+      telecomData: telecom_pie_data
     }, status: :ok
   end
 
@@ -25,8 +37,14 @@ class V1::MetersController < ApplicationController
   end
 
   def meters_by_division
+
     division_id = params[:division_id]
     @meters = Meter.includes(:subdivision).where(subdivisions: { division_id: division_id })
+    render json: @meters, status: :ok
+  end
+  def meters_by_subdivision
+    subdivision_id = params[:subdivision_id]
+    @meters = Meter.includes(:subdivision).where(subdivisions: { id: subdivision_id })
     render json: @meters, status: :ok
   end
 

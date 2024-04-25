@@ -4,13 +4,12 @@ Rails.application.routes.draw do
 
   namespace :v1 do
     # Devise routes for user authentication
-    devise_for :users, controllers: {
-      registrations: 'devise_overrides/users',
-      sessions: 'devise_overrides/sessions',
-      passwords: 'devise_overrides/passwords'
-    }
+    devise_for :users, controllers: { registrations: 'devise_overides/users',
+                                      sessions: 'devise_overides/sessions',
+                                      passwords: 'devise_overides/passwords'}
     devise_scope :user do
       get "show/user", to: "users#show"
+      # registrations: 'api/v1/registrations'
     end
 
     # Resources and nested routes
@@ -41,6 +40,7 @@ Rails.application.routes.draw do
 
     # Specialized meter route by division
     get 'meters/by_division/:division_id', to: 'meters#meters_by_division', as: 'meters_by_division'
+    get 'meters/by_subdivision/:subdivision_id', to: 'meters#meters_by_subdivision', as: 'meters_by_subdivision'
   end
 
   # Optionally, set a root for the API if needed
