@@ -90,8 +90,10 @@ class V1::MetersController < ApplicationController
 
   # POST /v1/meters
   def create
+    # binding.pry
     @meter = Meter.new(meter_params)
-
+    subdivision=Subdivision.first
+    @meter.subdivision=subdivision
     if @meter.save
       render json: @meter, status: :created
     else
@@ -122,8 +124,17 @@ class V1::MetersController < ApplicationController
 
  
   def meter_params
-    params.require(:meter).permit(:NEW_METER_NUMBER, :REF_NO, :METER_STATUS, :OLD_METER_NUMBER, :OLD_METER_READING, :NEW_METER_READING, :CONNECTION_TYPE, :BILL_MONTH, :LONGITUDE, :LATITUDE, :METER_TYPE, :KWH_MF, :SAN_LOAD, :CONSUMER_NAME, :CONSUMER_ADDRESS, :QC_CHECK, :APPLICATION_NO, :GREEN_METER, :TELCO, :SIM_NO, :SIGNAL_STRENGTH, :PICTURE_UPLOAD, :subdivision_id)
+    params.require(:meter).permit(
+      :NEW_METER_NUMBER, :REF_NO, :METER_STATUS, :OLD_METER_NUMBER, :OLD_METER_READING, 
+      :NEW_METER_READING, :CONNECTION_TYPE, :BILL_MONTH, :LONGITUDE, :LATITUDE, :METER_TYPE, 
+      :KWH_MF, :SAN_LOAD, :CONSUMER_NAME, :CONSUMER_ADDRESS, :QC_CHECK, :APPLICATION_NO, 
+      :GREEN_METER, :TELCO, :SIM_NO, :SIGNAL_STRENGTH, :PICTURE_UPLOAD, :METR_REPLACE_DATE_TIME, 
+      :NO_OF_RESET_OLD_METER, :NO_OF_RESET_NEW_METER, :KWH_T1, :KWH_T2, :KWH_TOTAL, 
+      :KVARH_T1, :KVARH_T2, :KVARH_TOTAL, :MDI_T1, :MDI_T2, :MDI_TOTAL, 
+      :CUMULATIVE_MDI_T1, :CUMULATIVE_MDI_T2, :CUMULATIVE_MDI_Total, :subdivision_id
+    )
   end
+  
   def authenticate_request!
     header = request.headers['Authorization']
     if header && header.split(' ').first == 'JWT'
