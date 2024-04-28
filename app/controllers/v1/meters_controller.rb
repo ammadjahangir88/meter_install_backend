@@ -97,7 +97,7 @@ class V1::MetersController < ApplicationController
     if @meter.save
       render json: @meter, status: :created
     else
-      render json: @meter.errors, status: :unprocessable_entity
+      render json: { errors: @meter.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
@@ -115,13 +115,26 @@ class V1::MetersController < ApplicationController
     @meter.destroy
     head :no_content
   end
+  # app/controllers/v1/meters_controller.rb
+  def bulk_delete
+    meter_ids = params[:meter_ids]  # Assuming meter_ids are passed as an array
+    Meter.where(id: meter_ids).destroy_all
+    head :no_content  # No content to return after deletion
+  rescue StandardError => e
+    render json: { error: "Failed to delete meters: #{e.message}" }, status: :unprocessable_entity
+  end
+
 
   private
 
   def set_meter
     @meter = Meter.find(params[:id])
   end
-
+  def format_errors(errors)
+    errors.to_hash(true).map do |field, messages|
+      { field: field, errors: messages.join(', ') }
+    end
+  end
  
   def meter_params
     params.require(:meter).permit(

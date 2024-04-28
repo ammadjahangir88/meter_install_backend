@@ -35,6 +35,7 @@ Rails.application.routes.draw do
         post 'import'
         post 'export'
         get 'dashboard'
+        delete 'bulk_delete' 
       end
     end
 

@@ -3,7 +3,9 @@ class V1::DiscosController < ApplicationController
     
     # GET /v1/discos
     def index
-      discos = Disco.includes(regions: { divisions: { subdivisions: :meters } }).all
+      discos = Rails.cache.fetch("all_discos", expires_in: 12.hours) do
+        Disco.includes(regions: { divisions: { subdivisions: :meters } }).all
+      end
       render json: discos, include: { 
         regions: { 
           include: { 
@@ -25,6 +27,7 @@ class V1::DiscosController < ApplicationController
         }
       }
     end
+    
     
   def all_discos
     @discos=Disco.all
