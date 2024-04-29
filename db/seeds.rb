@@ -66,3 +66,21 @@ meter_index = 1000
     end
   end
 end
+
+# Calculate total number of meters
+total_meters = Meter.count
+
+# Calculate the distribution
+meters_for_first_user = (total_meters * 0.60).round
+meters_for_last_user = total_meters - meters_for_first_user  # This ensures there are no rounding issues
+
+# Get the first and last user
+first_user = User.first
+last_user = User.last
+
+# Update meters for the first user
+Meter.limit(meters_for_first_user).update_all(user_id: first_user.id)
+
+# Update meters for the last user
+Meter.offset(meters_for_first_user).limit(meters_for_last_user).update_all(user_id: last_user.id)
+

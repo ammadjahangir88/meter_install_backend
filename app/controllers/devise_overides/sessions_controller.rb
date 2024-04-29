@@ -14,7 +14,7 @@ class DeviseOverides::SessionsController < Devise::SessionsController
 
       render json: { success: true, message: "Login successful", user: user, token: token }, status: :ok
     else
-      render json: { success: false, message: "Invalid email or password" }, status: :not_found
+      render json: { success: false, message: "Invalid email or password" }, status: :unauthorized
     end
   end
 end

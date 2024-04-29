@@ -111,6 +111,7 @@ GEM
     erubi (1.12.0)
     faker (2.23.0)
       i18n (>= 1.8.11, < 2)
+    ffi (1.16.3)
     globalid (1.2.1)
       activesupport (>= 6.1)
     groupdate (6.4.0)
@@ -121,6 +122,9 @@ GEM
     histogram (0.2.4.1)
     i18n (1.14.4)
       concurrent-ruby (~> 1.0)
+    image_processing (1.12.2)
+      mini_magick (>= 4.9.5, < 5)
+      ruby-vips (>= 2.0.17, < 3)
     io-console (0.7.2)
     irb (1.12.0)
       rdoc
@@ -140,6 +144,7 @@ GEM
     marcel (1.0.4)
     matrix (0.4.2)
     method_source (0.8.2)
+    mini_magick (4.12.0)
     mini_mime (1.1.5)
     minitest (5.22.3)
     msgpack (1.7.2)
@@ -228,6 +233,8 @@ GEM
     rmagick (5.5.0)
       observer (~> 0.1)
       pkg-config (~> 1.4)
+    ruby-vips (2.2.1)
+      ffi (~> 1.12)
     slop (3.6.0)
     stringio (3.1.0)
     thor (1.3.1)
@@ -263,6 +270,7 @@ DEPENDENCIES
   faker (~> 2.18)
   groupdate
   gruff
+  image_processing
   jsonapi-serializer
   mysql2 (~> 0.5)
   prawn

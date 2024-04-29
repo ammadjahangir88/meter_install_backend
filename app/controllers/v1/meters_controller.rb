@@ -60,7 +60,7 @@ class V1::MetersController < ApplicationController
     if params[:from_date].present? && params[:to_date].present?
       from_date = Date.parse(params[:from_date])
       to_date = Date.parse(params[:to_date])
-      @meters = @meters.where("BILL_MONTH >= ? AND BILL_MONTH <= ?", from_date, to_date)
+      @meters = @meters.where("meters.created_at >= ? AND meters.created_at <= ?", from_date, to_date)
     end
 
     render json: @meters
@@ -132,7 +132,11 @@ class V1::MetersController < ApplicationController
     @meter = Meter.new(meter_params)
     subdivision=Subdivision.first
     @meter.subdivision=subdivision
+    @meter.save
+    @meter.PICTURE_UPLOAD = "http://localhost:3000"+Rails.application.routes.url_helpers.rails_representation_url(@meter.image, only_path: true)
+
     if @meter.save
+
       render json: @meter, status: :created
     else
       render json: { errors: @meter.errors.full_messages }, status: :unprocessable_entity
@@ -233,7 +237,7 @@ class V1::MetersController < ApplicationController
       :GREEN_METER, :TELCO, :SIM_NO, :SIGNAL_STRENGTH, :PICTURE_UPLOAD, :METR_REPLACE_DATE_TIME, 
       :NO_OF_RESET_OLD_METER, :NO_OF_RESET_NEW_METER, :KWH_T1, :KWH_T2, :KWH_TOTAL, 
       :KVARH_T1, :KVARH_T2, :KVARH_TOTAL, :MDI_T1, :MDI_T2, :MDI_TOTAL, 
-      :CUMULATIVE_MDI_T1, :CUMULATIVE_MDI_T2, :CUMULATIVE_MDI_Total, :subdivision_id
+      :CUMULATIVE_MDI_T1, :CUMULATIVE_MDI_T2, :CUMULATIVE_MDI_Total, :subdivision_id,:image
     )
   end
   
