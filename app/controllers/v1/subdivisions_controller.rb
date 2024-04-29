@@ -3,16 +3,13 @@
     
       # GET /v1/subdivisions
       def index
-        @subdivisions = Subdivision.includes(:division).all
-        divisions_json = @subdivisions.map do |subdivision|
-          {
-            id: subdivision.id,
-            name: subdivision.name,
-            division: subdivision.division.name 
-          }
+        if params[:division_id]
+          @subdivisions = Subdivision.where(division_id: params[:division_id])
+        else
+          @subdivisions = Subdivision.all
+        end
+        render json: @subdivisions
       end
-      render json: divisions_json, status: :ok
-    end
     
       # GET /v1/subdivisions/:id
       def show

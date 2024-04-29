@@ -1,5 +1,6 @@
 class V1::MetersController < ApplicationController
   before_action :set_meter, only: [:show, :update, :destroy]
+  # before_action :set_filters, only: [:generate_report]
   require 'csv'
 
   def dashboard
@@ -32,8 +33,37 @@ class V1::MetersController < ApplicationController
 
   # GET /v1/meters
   def index
-    @meters = Meter.all
-    render json: @meters, status: :ok
+    @meters = Meter.all.includes(:user)
+
+    # Join with users correctly
+    if params[:user_id].present?
+      @meters = @meters.where(users: { id: params[:user_id] })
+    end
+    
+    # Other filters...
+    if params[:disco_id].present?
+      @meters = @meters.joins(subdivision: { division: { region: :disco } }).where(discos: { id: params[:disco_id] })
+    end
+
+    if params[:region_id].present?
+      @meters = @meters.joins(subdivision: { division: :region }).where(regions: { id: params[:region_id] })
+    end
+
+    if params[:division_id].present?
+      @meters = @meters.joins(subdivision: :division).where(divisions: { id: params[:division_id] })
+    end
+
+    if params[:subdivision_id].present?
+      @meters = @meters.joins(:subdivision).where(subdivisions: { id: params[:subdivision_id] })
+    end
+
+    if params[:from_date].present? && params[:to_date].present?
+      from_date = Date.parse(params[:from_date])
+      to_date = Date.parse(params[:to_date])
+      @meters = @meters.where("BILL_MONTH >= ? AND BILL_MONTH <= ?", from_date, to_date)
+    end
+
+    render json: @meters
   end
 
   def meters_by_division
@@ -87,7 +117,15 @@ class V1::MetersController < ApplicationController
   def show
     render json: @meter, status: :ok
   end
-
+  def generate_report
+    @meters = Meter.includes(:user, subdivision: { division: { region: :disco } })
+    apply_filters!
+    pdf = MeterReportService.new(@meters).generate_pdf
+    send_data pdf, filename: "meter_report_#{Time.zone.now.to_date}.pdf", type: 'application/pdf', disposition: 'attachment'
+  rescue StandardError => e
+    render json: { error: e.message }, status: :internal_server_error
+  end
+  
   # POST /v1/meters
   def create
     # binding.pry
@@ -123,10 +161,59 @@ class V1::MetersController < ApplicationController
   rescue StandardError => e
     render json: { error: "Failed to delete meters: #{e.message}" }, status: :unprocessable_entity
   end
+  def generate_report
+    # Assuming 'user_id' is passed as a parameter and it is valid.
+    @user = User.find_by(id: params[:user_id])
+    
+    # Handling the case where no valid user is found
+    if @user.nil?
+      render json: { error: 'User not found' }, status: :not_found
+      return
+    end
+  
+    @meters = Meter.includes(user: {}, subdivision: { division: { region: :disco } })
+    apply_filters!
+  
+    # Pass the user to the service
+    pdf = MeterReportService.new(@meters, @user).generate_pdf
+    send_data pdf, filename: "meter_report_#{Time.zone.now.to_date}.pdf", type: 'application/pdf', disposition: 'attachment'
+  rescue StandardError => e
+    render json: { error: e.message }, status: :internal_server_error
+  end
+  
+  private
+  
+  def apply_filters!
+    @meters = @meters.where(user_id: params[:user_id]) if params[:user_id].present?
+    @meters = @meters.where(subdivisions: { id: params[:subdivision_id] }) if params[:subdivision_id].present?
+    @meters = @meters.where(divisions: { id: params[:division_id] }) if params[:division_id].present?
+    @meters = @meters.where(regions: { id: params[:region_id] }) if params[:region_id].present?
+    @meters = @meters.where(discos: { id: params[:disco_id] }) if params[:disco_id].present?
+    apply_date_filters if params[:from_date].present? && params[:to_date].present?
+  end
 
 
   private
+ 
+  def set_filters
+    @meters = Meter.includes(:user, subdivision: { division: { region: :disco } })
+    filter_by_params
+  end
 
+  def filter_by_params
+    @meters = @meters.where(user_id: params[:user_id]) if params[:user_id].present?
+    @meters = @meters.where(subdivisions: { id: params[:subdivision_id] }) if params[:subdivision_id].present?
+    @meters = @meters.where(divisions: { id: params[:division_id] }) if params[:division_id].present?
+    @meters = @meters.where(regions: { id: params[:region_id] }) if params[:region_id].present?
+    @meters = @meters.where(discos: { id: params[:disco_id] }) if params[:disco_id].present?
+    apply_date_filters if params[:from_date].present? && params[:to_date].present?
+  end
+
+  def apply_date_filters
+    from_date = Date.parse(params[:from_date])
+    to_date = Date.parse(params[:to_date])
+    @meters = @meters.where("bill_month >= ? AND bill_month <= ?", from_date, to_date)
+  end
   def set_meter
     @meter = Meter.find(params[:id])
   end
@@ -135,7 +222,9 @@ class V1::MetersController < ApplicationController
       { field: field, errors: messages.join(', ') }
     end
   end
- 
+  def report_params
+    params.permit(:user_id, :disco_id, :region_id, :division_id, :subdivision_id, :from_date, :to_date)
+  end
   def meter_params
     params.require(:meter).permit(
       :NEW_METER_NUMBER, :REF_NO, :METER_STATUS, :OLD_METER_NUMBER, :OLD_METER_READING, 

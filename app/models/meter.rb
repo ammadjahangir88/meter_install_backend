@@ -1,5 +1,7 @@
 class Meter < ApplicationRecord
   belongs_to :subdivision
+  belongs_to :user, optional: true
+
   validates :NEW_METER_NUMBER, :REF_NO, presence: true
   validates :NEW_METER_NUMBER, presence: true, uniqueness: true
   validates :REF_NO, presence: true, uniqueness: true

@@ -3,22 +3,13 @@
     
         # GET /v1/regions
         def index
-        regions = Region.includes(divisions: { subdivisions: :meters }).all
-        render json: regions, include: {
-            divisions: {
-            include: {
-                subdivisions: {
-                include: {
-                    meters: {
-                    except: [:created_at, :updated_at, :subdivision_id]
-                    }
-                },
-                except: [:created_at, :updated_at, :division_id]
-                }
-            },
-            except: [:created_at, :updated_at, :region_id]
-            }
-        }
+           
+        if params[:disco_id]
+            @regions = Region.where(disco_id: params[:disco_id])
+        else
+            @regions = Region.all
+        end
+            render json: @regions
         end
     
         # GET /v1/regions/:id

@@ -1,6 +1,7 @@
 class  DeviseOverides::UsersController < Devise::RegistrationsController
   def index
     @users = User.all
+    render json: @users, only: [:username, :email, :role]
   end
 
   def new

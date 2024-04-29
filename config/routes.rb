@@ -7,10 +7,13 @@ Rails.application.routes.draw do
     devise_for :users, controllers: { registrations: 'devise_overides/users',
                                       sessions: 'devise_overides/sessions',
                                       passwords: 'devise_overides/passwords'}
+   
     devise_scope :user do
+    
       get "show/user", to: "users#show"
       # registrations: 'api/v1/registrations'
     end
+    resources :users
 
     # Resources and nested routes
     resources :divisions
@@ -36,8 +39,11 @@ Rails.application.routes.draw do
         post 'export'
         get 'dashboard'
         delete 'bulk_delete' 
+        post 'generate_report' 
       end
     end
+    get 'meters/generate_meter_report', to: 'meters#generate_report', as: 'generate_meter_report'
+   
 
     # Specialized meter route by division
     get 'meters/by_division/:division_id', to: 'meters#meters_by_division', as: 'meters_by_division'

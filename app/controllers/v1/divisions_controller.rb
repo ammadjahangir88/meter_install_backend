@@ -3,18 +3,12 @@
       
         # GET /v1/divisions
         def index
-          @divisions = Division.includes(:disco).all
-      divisions_json = @divisions.map do |division|
-        {
-          id: division.id,
-          name: division.name,
-          disco_id: division.disco_id,
-          created_at: division.created_at,
-          updated_at: division.updated_at,
-          disco: division.disco.name  # Extracting only the name of the disco
-        }
-      end
-      render json: divisions_json, status: :ok
+          if params[:region_id]
+            @divisions = Division.where(region_id: params[:region_id])
+          else
+            @divisions = Division.all
+          end
+          render json: @divisions
         end
       
         # GET /v1/divisions/:id

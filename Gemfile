@@ -36,6 +36,8 @@ gem 'faker', '~> 2.18', require: false
 gem 'devise-jwt'
 gem 'will_paginate'
 
+gem 'prawn'
+gem 'gruff'
 
 gem 'jsonapi-serializer'
 

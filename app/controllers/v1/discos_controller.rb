@@ -26,11 +26,21 @@ class V1::DiscosController < ApplicationController
           except: [:created_at, :updated_at, :disco_id]
         }
       }
-    end
+  end
     
     
   def all_discos
     @discos=Disco.all
+    # @division=Division.all
+    # @subdivision=Subdivision.all
+    # @user=User.all
+    # @meter=Meter.all
+    # render json: {
+    #   discos:  @discos,
+    #   division: @division,
+    #   subdivision:  @subdivision,
+    #   meter:  @meter
+    # }, status: :ok
     render json: @discos, status: :ok
 
   end 
