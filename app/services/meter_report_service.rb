@@ -2,9 +2,10 @@ require 'prawn'
 require 'gruff'
 
 class MeterReportService
-  def initialize(meters, user)
+  def initialize(meters, user, context_params)
     @meters = meters
     @user = user
+    @context_params = context_params
   end
 
   def generate_pdf
@@ -12,8 +13,6 @@ class MeterReportService
 
     pdf = Prawn::Document.new
     setup_pdf(pdf)
-   
-    # add_meter_count_by_type(pdf)
     add_pie_chart(pdf) unless @meters.empty?
     pdf.render
   end
@@ -25,19 +24,43 @@ class MeterReportService
     pdf.move_down 10
     pdf.text "Report generated on: #{Date.today}", size: 12
     pdf.text "Report by Field Supervisor: #{@user.username}"
-    pdf.move_down 5
-    pdf.text "Total Meter Installed: #{ @meters.count}"
-    connection_types = @meters.group_by(&:CONNECTION_TYPE)
-    connection_types.each do |type, meters|
-      pdf.text "#{type} Meters installed: #{meters.count}", size: 12
+   
+    # Adding dynamic hierarchical information
+    if @context_params[:disco_id] != ''
+      disco = Disco.find(@context_params[:disco_id])
+      pdf.text "Disco: #{disco.name}", size: 12
     end
-   
-  end
-
-  def add_meter_count_by_type(pdf)
-   
   
+    if @context_params[:region_id] != ''
+      region = Region.find(@context_params[:region_id])
+      pdf.text "Region: #{region.name}", size: 12
+    end
+  
+    if @context_params[:division_id] != ''
+      division = Division.find(@context_params[:division_id])
+      pdf.text "Division: #{division.name}", size: 12
+    end
+  
+    if @context_params[:subdivision_id] != ''
+      subdivision = Subdivision.find(@context_params[:subdivision_id])
+      pdf.text "Subdivision: #{subdivision.name}", size: 12
+    end
+   binding.pry
+    # Display the date range if available
+    from_date = @context_params[:from_date]
+    to_date = @context_params[:to_date]
+    if from_date.present? && to_date.present?
+      pdf.text "Report covers period: #{from_date} to #{to_date}", size: 12
+    elsif from_date.present?
+      pdf.text "Report from: #{from_date}", size: 12
+    elsif to_date.present?
+      pdf.text "Report up to: #{to_date}", size: 12
+    end
+  
+    pdf.move_down 5
+    pdf.text "Total Meters Installed: #{ @meters.count}"
   end
+  
 
   def add_pie_chart(pdf)
     pie_data = @meters.group_by(&:CONNECTION_TYPE).transform_values(&:count)
@@ -47,10 +70,6 @@ class MeterReportService
     chart_image = chart.to_image
     chart_blob = chart_image.to_blob
     image_stream = StringIO.new(chart_blob)
-
-  
     pdf.image image_stream, scale: 0.50
   end
-
-  # Ensure to include other necessary methods
 end

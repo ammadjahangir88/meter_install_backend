@@ -117,16 +117,9 @@ class V1::MetersController < ApplicationController
 
   # GET /v1/meters/:id
   def show
-    render json: @meter, status: :ok
+    render json: @meter, except: [:created_at, :updated_at, :subdivision_id, :user_id], status: :ok
   end
-  def generate_report
-    @meters = Meter.includes(:user, subdivision: { division: { region: :disco } })
-    apply_filters!
-    pdf = MeterReportService.new(@meters).generate_pdf
-    send_data pdf, filename: "meter_report_#{Time.zone.now.to_date}.pdf", type: 'application/pdf', disposition: 'attachment'
-  rescue StandardError => e
-    render json: { error: e.message }, status: :internal_server_error
-  end
+
   
   # POST /v1/meters
   def create
@@ -168,20 +161,29 @@ class V1::MetersController < ApplicationController
     render json: { error: "Failed to delete meters: #{e.message}" }, status: :unprocessable_entity
   end
   def generate_report
-    # Assuming 'user_id' is passed as a parameter and it is valid.
+
     @user = User.find_by(id: params[:user_id])
-    
+   
     # Handling the case where no valid user is found
     if @user.nil?
       render json: { error: 'User not found' }, status: :not_found
       return
     end
-  
+    
     @meters = Meter.includes(user: {}, subdivision: { division: { region: :disco } })
     apply_filters!
-  
-    # Pass the user to the service
-    pdf = MeterReportService.new(@meters, @user).generate_pdf
+    
+    # Pass additional context about the hierarchical data to the service
+    context_params = {
+      disco_id: params[:disco_id],
+      region_id: params[:region_id],
+      division_id: params[:division_id],
+      subdivision_id: params[:subdivision_id],
+      from_date: params[:from_date],
+      to_date: params[:to_date]
+    }
+    
+    pdf = MeterReportService.new(@meters, @user, context_params).generate_pdf
     send_data pdf, filename: "meter_report_#{Time.zone.now.to_date}.pdf", type: 'application/pdf', disposition: 'attachment'
   rescue StandardError => e
     render json: { error: e.message }, status: :internal_server_error
@@ -189,14 +191,6 @@ class V1::MetersController < ApplicationController
   
   private
   
-  def apply_filters!
-    @meters = @meters.where(user_id: params[:user_id]) if params[:user_id].present?
-    @meters = @meters.where(subdivisions: { id: params[:subdivision_id] }) if params[:subdivision_id].present?
-    @meters = @meters.where(divisions: { id: params[:division_id] }) if params[:division_id].present?
-    @meters = @meters.where(regions: { id: params[:region_id] }) if params[:region_id].present?
-    @meters = @meters.where(discos: { id: params[:disco_id] }) if params[:disco_id].present?
-    apply_date_filters if params[:from_date].present? && params[:to_date].present?
-  end
 
 
   private
@@ -206,20 +200,31 @@ class V1::MetersController < ApplicationController
     filter_by_params
   end
 
+  def apply_filters!
+    filter_by_params
+    apply_date_filters
+  end
+  
   def filter_by_params
+    
     @meters = @meters.where(user_id: params[:user_id]) if params[:user_id].present?
-    @meters = @meters.where(subdivisions: { id: params[:subdivision_id] }) if params[:subdivision_id].present?
-    @meters = @meters.where(divisions: { id: params[:division_id] }) if params[:division_id].present?
-    @meters = @meters.where(regions: { id: params[:region_id] }) if params[:region_id].present?
-    @meters = @meters.where(discos: { id: params[:disco_id] }) if params[:disco_id].present?
-    apply_date_filters if params[:from_date].present? && params[:to_date].present?
+    @meters = @meters.joins(:subdivision).where(subdivisions: { id: params[:subdivision_id] }) if params[:subdivision_id].present?
+    @meters = @meters.joins(subdivision: { division: {} }).where(divisions: { id: params[:division_id] }) if params[:division_id].present?
+    @meters = @meters.joins(subdivision: { division: { region: {} } }).where(regions: { id: params[:region_id] }) if params[:region_id].present?
+    @meters = @meters.joins(subdivision: { division: { region: { disco: {} } } }).where(discos: { id: params[:disco_id] }) if params[:disco_id].present?
   end
-
+  
   def apply_date_filters
-    from_date = Date.parse(params[:from_date])
-    to_date = Date.parse(params[:to_date])
-    @meters = @meters.where("bill_month >= ? AND bill_month <= ?", from_date, to_date)
+    if params[:from_date].present? && params[:to_date].present?
+      from_date = Date.parse(params[:from_date])
+      to_date = Date.parse(params[:to_date])
+      @meters = @meters.where("meters.created_at >= ? AND meters.created_at <= ?", from_date, to_date)
+    end
+  
   end
+  
+
+  
   def set_meter
     @meter = Meter.find(params[:id])
   end
