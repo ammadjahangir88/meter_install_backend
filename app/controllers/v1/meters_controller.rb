@@ -6,30 +6,32 @@ class V1::MetersController < ApplicationController
   def dashboard
     meters_with_divisions = Meter.joins(subdivision: :division)
     division_data = meters_with_divisions.group('divisions.id').count
-    status_data = Meter.group(:METER_STATUS).count
-    tariff_data = Meter.group(:CONNECTION_TYPE).count
-    telecom_data = Meter.group(:TELCO).count
   
-    # Improve mapping data for frontend pie charts to include division IDs
+    # Fetch additional data for meters
+    meters_data = Meter.select(:id, :LATITUDE, :LONGITUDE, :REF_NO, :METER_TYPE, :APPLICATION_NO).all
+  
     division_pie_data = division_data.map do |id, count|
       division = Division.find(id)
       {
-        id: division.id,  # Include the division ID
-        name: division.name,  # Include the division name
-        value: count  # Include the count of meters
+        id: division.id,
+        name: division.name,
+        value: count
       }
     end
-    status_pie_data = status_data.map { |status, count| { name: status, value: count } }
-    tariff_pie_data = tariff_data.map { |tariff, count| { name: tariff, value: count } }
-    telecom_pie_data = telecom_data.map { |telco, count| { name: telco, value: count } }
-    
+  
+    status_pie_data = Meter.group(:METER_STATUS).count.map { |status, count| { name: status, value: count } }
+    tariff_pie_data = Meter.group(:CONNECTION_TYPE).count.map { |tariff, count| { name: tariff, value: count } }
+    telecom_pie_data = Meter.group(:TELCO).count.map { |telco, count| { name: telco, value: count } }
+  
     render json: {
       divisionData: division_pie_data,
       statusData: status_pie_data,
       tariffData: tariff_pie_data,
-      telecomData: telecom_pie_data
+      telecomData: telecom_pie_data,
+      metersData: meters_data
     }, status: :ok
   end
+  
 
   # GET /v1/meters
   def index
