@@ -13,8 +13,9 @@ Rails.application.routes.draw do
       get "show/user", to: "users#show"
       # registrations: 'api/v1/registrations'
     end
-    resources :users
-
+    resources :users do
+      get 'current', on: :collection # This will create '/v1/users/current'
+    end
     # Resources and nested routes
     resources :divisions
     resources :subdivisions

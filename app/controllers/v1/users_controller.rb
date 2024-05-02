@@ -21,6 +21,10 @@ class V1::UsersController < ApplicationController
           render json: { error: 'Failed to delete user' }, status: :unprocessable_entity
         end
     end
+    def current
+      render json: @current_user, only: [:id, :username, :email, :role], status: :ok
+    end
+    
 
 
   private

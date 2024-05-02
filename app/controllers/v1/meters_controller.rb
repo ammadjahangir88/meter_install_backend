@@ -4,17 +4,33 @@ class V1::MetersController < ApplicationController
   require 'csv'
 
   def dashboard
-    meters_with_divisions = Meter.joins(subdivision: :division)
-    division_data = meters_with_divisions.group('divisions.id').count
+    meters_with_subdivisions = Meter.joins(subdivision: :division)
+    
+    # Aggregate data by divisions
+    division_data = meters_with_subdivisions.group('divisions.id').count
+  
+    # Aggregate data by subdivisions
+    subdivision_data = meters_with_subdivisions.group('subdivisions.id').count
   
     # Fetch additional data for meters
     meters_data = Meter.select(:id, :LATITUDE, :LONGITUDE, :REF_NO, :METER_TYPE, :APPLICATION_NO).all
   
+    # Prepare pie data for divisions
     division_pie_data = division_data.map do |id, count|
       division = Division.find(id)
       {
         id: division.id,
         name: division.name,
+        value: count
+      }
+    end
+  
+    # Prepare pie data for subdivisions
+    subdivision_pie_data = subdivision_data.map do |id, count|
+      subdivision = Subdivision.find(id)
+      {
+        id: subdivision.id,
+        name: subdivision.name,
         value: count
       }
     end
@@ -25,12 +41,14 @@ class V1::MetersController < ApplicationController
   
     render json: {
       divisionData: division_pie_data,
+      subdivisionData: subdivision_pie_data, # Include this in your response
       statusData: status_pie_data,
       tariffData: tariff_pie_data,
       telecomData: telecom_pie_data,
       metersData: meters_data
     }, status: :ok
   end
+  
   
 
   # GET /v1/meters
@@ -75,6 +93,7 @@ class V1::MetersController < ApplicationController
     render json: @meters, status: :ok
   end
   def meters_by_subdivision
+  
     subdivision_id = params[:subdivision_id]
     @meters = Meter.includes(:subdivision).where(subdivisions: { id: subdivision_id })
     render json: @meters, status: :ok
