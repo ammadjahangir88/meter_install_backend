@@ -100,25 +100,34 @@ class V1::MetersController < ApplicationController
   end
 
   def import
-  
     uploaded_file = params[:file]
     return render json: { error: "No file uploaded" }, status: :bad_request unless uploaded_file
   
-    begin
-      CSV.foreach(uploaded_file.path, headers: true) do |row|
-        meter_params = row.to_hash.slice(*Meter.attribute_names)
-        meter_params['subdivision_id'] = 1
-        Meter.create!(meter_params)
+    successes = []
+    errors = []
+  
+    CSV.foreach(uploaded_file.path, headers: true) do |row|
+      meter_params = row.to_hash.slice(*Meter.attribute_names)
+     
+      meter_params['subdivision_id'] =params[:meter][:subdivision_id]
+      meter_params['user_id'] = @current_user.id
+      
+      begin
+        meter = Meter.create!(meter_params)
+        successes << { ref_no: meter_params['REF_NO'], message: "Successfully imported" }
+      rescue ActiveRecord::RecordInvalid => e
+        binding.pry
+        errors << { ref_no: meter_params['REF_NO'], error: "Validation failed: #{e.record.errors.full_messages.join(", ")}" }
       end
-      render json: { message: "Meters imported successfully" }, status: :ok
-    rescue ActiveRecord::RecordInvalid => e
-      # This captures any validation errors from the model on save.
-      render json: { error: "Validation failed: #{e.message}" }, status: :unprocessable_entity
-    rescue StandardError => e
-      # This captures any other errors that could occur, such as issues with the CSV formatting.
-      render json: { error: "Import failed: #{e.message}" }, status: :unprocessable_entity
+    end
+  
+    if errors.empty?
+      render json: { message: "All meters imported successfully", successes: successes }, status: :ok
+    else
+      render json: { message: "Some meters failed to import", successes: successes, errors: errors }, status: :partial_content
     end
   end
+  
 
   def export
     meter_ids = params[:meter_ids]
@@ -142,20 +151,29 @@ class V1::MetersController < ApplicationController
   
   # POST /v1/meters
   def create
-    # binding.pry
-    @meter = Meter.new(meter_params)
-    subdivision=Subdivision.first
-    @meter.subdivision=subdivision
-    @meter.save
-    @meter.PICTURE_UPLOAD = "http://localhost:3000"+Rails.application.routes.url_helpers.rails_representation_url(@meter.image, only_path: true)
-
+    @meter = Meter.new(meter_params.except(:image))
+    if Subdivision.exists?(meter_params[:subdivision_id])
+      @meter.subdivision = Subdivision.find(meter_params[:subdivision_id])
+    else
+      return render json: { error: "Subdivision does not exist" }, status: :unprocessable_entity
+    end
+  
+    if meter_params[:image].present?
+      @meter.image.attach(meter_params[:image])
+    end
+   @meter.user=@current_user
     if @meter.save
-
+      if @meter.image.attached?
+        image_url = Rails.application.routes.url_helpers.rails_blob_url(@meter.image, only_path: true)
+        @meter.update(PICTURE_UPLOAD: "http://localhost:3000" + image_url)
+      end
       render json: @meter, status: :created
     else
       render json: { errors: @meter.errors.full_messages }, status: :unprocessable_entity
     end
   end
+  
+  
 
   # PATCH/PUT /v1/meters/:id
   def update
@@ -264,7 +282,9 @@ class V1::MetersController < ApplicationController
       :NO_OF_RESET_OLD_METER, :NO_OF_RESET_NEW_METER, :KWH_T1, :KWH_T2, :KWH_TOTAL, 
       :KVARH_T1, :KVARH_T2, :KVARH_TOTAL, :MDI_T1, :MDI_T2, :MDI_TOTAL, 
       :CUMULATIVE_MDI_T1, :CUMULATIVE_MDI_T2, :CUMULATIVE_MDI_Total, :subdivision_id,:image
-    )
+    ).tap do |sanitized_params|
+      sanitized_params[:image] = nil if sanitized_params[:image] == "null"
+    end
   end
   
   def authenticate_request!
