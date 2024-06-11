@@ -2,7 +2,22 @@ class V1::MetersController < ApplicationController
   before_action :set_meter, only: [:show, :update, :destroy]
   # before_action :set_filters, only: [:generate_report]
   require 'csv'
-
+  def search
+    if params[:ref_no].present?
+      meters = Meter.where(REF_NO: params[:ref_no])
+    else
+      meters = Meter.all
+    end
+  
+    inspected_meters = meters.joins(:inspection).distinct
+    uninspected_meters = meters.left_outer_joins(:inspection).where(inspections: { id: nil }).distinct
+  
+    render json: {
+      inspected_meters: inspected_meters.as_json(include: :inspection),
+      uninspected_meters: uninspected_meters
+    }
+  end
+  
   def dashboard
     meters_with_subdivisions = Meter.joins(subdivision: :division)
     
@@ -113,10 +128,11 @@ class V1::MetersController < ApplicationController
       meter_params['user_id'] = @current_user.id
       
       begin
+       
         meter = Meter.create!(meter_params)
         successes << { ref_no: meter_params['REF_NO'], message: "Successfully imported" }
       rescue ActiveRecord::RecordInvalid => e
-        binding.pry
+       
         errors << { ref_no: meter_params['REF_NO'], error: "Validation failed: #{e.record.errors.full_messages.join(", ")}" }
       end
     end
@@ -201,7 +217,7 @@ class V1::MetersController < ApplicationController
 
     @user = User.find_by(id: params[:user_id])
    
-    # Handling the case where no valid user is found
+    # Handling the case where no validl user is found
     if @user.nil?
       render json: { error: 'User not found' }, status: :not_found
       return

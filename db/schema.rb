@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_04_29_134750) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_10_091757) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -53,8 +53,25 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_29_134750) do
     t.index ["region_id"], name: "index_divisions_on_region_id"
   end
 
+  create_table "inspections", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "meter_id", null: false
+    t.bigint "user_id", null: false
+    t.boolean "meter_type_ok"
+    t.boolean "display_verification_ok"
+    t.boolean "installation_location_ok"
+    t.boolean "wiring_connection_ok"
+    t.boolean "sealing_ok"
+    t.boolean "documentation_ok"
+    t.boolean "compliance_assurance_ok"
+    t.text "remarks"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["meter_id"], name: "index_inspections_on_meter_id"
+    t.index ["user_id"], name: "index_inspections_on_user_id"
+  end
+
   create_table "meters", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.string "NEW_METER_NUMBER", null: false
+    t.string "NEW_METER_NUMBER"
     t.string "REF_NO", null: false
     t.string "METER_STATUS"
     t.string "OLD_METER_NUMBER"
@@ -69,7 +86,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_29_134750) do
     t.float "SAN_LOAD"
     t.string "CONSUMER_NAME"
     t.text "CONSUMER_ADDRESS"
-    t.boolean "QC_CHECK", default: false
     t.string "APPLICATION_NO"
     t.string "GREEN_METER"
     t.string "TELCO"
@@ -95,7 +111,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_29_134750) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id"
-    t.index ["NEW_METER_NUMBER"], name: "index_meters_on_NEW_METER_NUMBER", unique: true
     t.index ["REF_NO"], name: "index_meters_on_REF_NO", unique: true
     t.index ["subdivision_id"], name: "index_meters_on_subdivision_id"
     t.index ["user_id"], name: "index_meters_on_user_id"
@@ -134,6 +149,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_29_134750) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "divisions", "regions"
+  add_foreign_key "inspections", "meters"
+  add_foreign_key "inspections", "users"
   add_foreign_key "meters", "subdivisions"
   add_foreign_key "meters", "users"
   add_foreign_key "regions", "discos"

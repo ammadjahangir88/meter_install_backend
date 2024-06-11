@@ -2,9 +2,11 @@ class Meter < ApplicationRecord
   belongs_to :subdivision
   belongs_to :user, optional: true
   has_one_attached :image
-  validates :NEW_METER_NUMBER, :REF_NO, presence: true
-  validates :NEW_METER_NUMBER, presence: true, uniqueness: true
+  validates  :REF_NO, presence: true
+  # validates :NEW_METER_NUMBER, presence: true, uniqueness: true
   validates :REF_NO, presence: true, uniqueness: true
+
+  has_one :inspection, dependent: :destroy
   # Define CSV headers
   def self.csv_headers
     [

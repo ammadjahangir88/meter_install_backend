@@ -28,7 +28,11 @@ Rails.application.routes.draw do
         delete "delete_subdivisions"
       end
     end
-
+    resources :inspections do
+      collection do
+        get 'inspection_completed'  # This route should match your controller action
+      end
+    end
     # Additional routes for discos
     get "all_discos", to: "discos#all_discos"
     get "divisions/:id/meters", to: "divisions#meters", as: 'division_meters'
@@ -38,6 +42,7 @@ Rails.application.routes.draw do
       collection do
         post 'import'
         post 'export'
+        get 'search'
         get 'dashboard'
         delete 'bulk_delete' 
         post 'generate_report' 
@@ -45,12 +50,12 @@ Rails.application.routes.draw do
     end
     get 'meters/generate_meter_report', to: 'meters#generate_report', as: 'generate_meter_report'
    
-
+    
     # Specialized meter route by division
     get 'meters/by_division/:division_id', to: 'meters#meters_by_division', as: 'meters_by_division'
     get 'meters/by_subdivision/:subdivision_id', to: 'meters#meters_by_subdivision', as: 'meters_by_subdivision'
   end
-
+ 
   # Optionally, set a root for the API if needed
   # root to: 'home#index'
 end

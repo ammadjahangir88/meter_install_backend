@@ -38,6 +38,8 @@ gem 'will_paginate'
 
 gem 'prawn'
 gem 'gruff'
+gem 'roo'
+gem 'roo-xls'  # For handling .xls files specifically
 
 gem 'jsonapi-serializer'
 
