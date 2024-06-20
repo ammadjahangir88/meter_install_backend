@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
   # Health check route
   get "up" => "rails/health#show", as: :rails_health_check
-
+  get "hello_world", to: proc { |env| [200, { 'Content-Type' => 'application/json' }, [{ message: 'Hello, World!' }.to_json]] }
   namespace :v1 do
     # Devise routes for user authentication
     devise_for :users, controllers: { registrations: 'devise_overides/users',

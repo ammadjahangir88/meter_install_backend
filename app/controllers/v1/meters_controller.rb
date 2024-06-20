@@ -1,3 +1,4 @@
+
 class V1::MetersController < ApplicationController
   before_action :set_meter, only: [:show, :update, :destroy]
   # before_action :set_filters, only: [:generate_report]
@@ -114,6 +115,7 @@ class V1::MetersController < ApplicationController
     render json: @meters, status: :ok
   end
 
+
   def import
     uploaded_file = params[:file]
     return render json: { error: "No file uploaded" }, status: :bad_request unless uploaded_file
@@ -132,7 +134,6 @@ class V1::MetersController < ApplicationController
         meter = Meter.create!(meter_params)
         successes << { ref_no: meter_params['REF_NO'], message: "Successfully imported" }
       rescue ActiveRecord::RecordInvalid => e
-       
         errors << { ref_no: meter_params['REF_NO'], error: "Validation failed: #{e.record.errors.full_messages.join(", ")}" }
       end
     end
@@ -180,8 +181,10 @@ class V1::MetersController < ApplicationController
    @meter.user=@current_user
     if @meter.save
       if @meter.image.attached?
-        image_url = Rails.application.routes.url_helpers.rails_blob_url(@meter.image, only_path: true)
-        @meter.update(PICTURE_UPLOAD: "http://localhost:3000" + image_url)
+        # image_url = Rails.application.routes.url_helpers.url_for(@meter.image, only_path: true)
+       # @meter.update(PICTURE_UPLOAD: "http://50.62.183.243/api" + image_url)
+       image_url=url_for(@meter.image)
+       @meter.update(PICTURE_UPLOAD:  image_url)
       end
       render json: @meter, status: :created
     else
@@ -293,7 +296,7 @@ class V1::MetersController < ApplicationController
     params.require(:meter).permit(
       :NEW_METER_NUMBER, :REF_NO, :METER_STATUS, :OLD_METER_NUMBER, :OLD_METER_READING, 
       :NEW_METER_READING, :CONNECTION_TYPE, :BILL_MONTH, :LONGITUDE, :LATITUDE, :METER_TYPE, 
-      :KWH_MF, :SAN_LOAD, :CONSUMER_NAME, :CONSUMER_ADDRESS, :QC_CHECK, :APPLICATION_NO, 
+      :KWH_MF, :SAN_LOAD, :CONSUMER_NAME, :CONSUMER_ADDRESS, :APPLICATION_NO, 
       :GREEN_METER, :TELCO, :SIM_NO, :SIGNAL_STRENGTH, :PICTURE_UPLOAD, :METR_REPLACE_DATE_TIME, 
       :NO_OF_RESET_OLD_METER, :NO_OF_RESET_NEW_METER, :KWH_T1, :KWH_T2, :KWH_TOTAL, 
       :KVARH_T1, :KVARH_T2, :KVARH_TOTAL, :MDI_T1, :MDI_T2, :MDI_TOTAL, 
