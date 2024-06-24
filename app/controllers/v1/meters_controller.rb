@@ -69,14 +69,14 @@ class V1::MetersController < ApplicationController
 
   # GET /v1/meters
   def index
-    @meters = Meter.all.includes(:user)
+   
+    @meters = Meter.includes(:user)
 
-    # Join with users correctly
+    # Apply filters...
     if params[:user_id].present?
       @meters = @meters.where(users: { id: params[:user_id] })
     end
-    
-    # Other filters...
+
     if params[:disco_id].present?
       @meters = @meters.joins(subdivision: { division: { region: :disco } }).where(discos: { id: params[:disco_id] })
     end
@@ -98,8 +98,22 @@ class V1::MetersController < ApplicationController
       to_date = Date.parse(params[:to_date])
       @meters = @meters.where("meters.created_at >= ? AND meters.created_at <= ?", from_date, to_date)
     end
+    if params[:ref_no].present?
+      @meters = @meters.where("ref_no LIKE ?", "%#{params[:ref_no]}%")
+    end
 
-    render json: @meters
+    # Pagination
+    @meters = @meters.page(params[:page]).per(params[:per_page] || 20)
+    render json: { meters: @meters, meta: pagination_meta(@meters) }
+  end
+  def pagination_meta(meters)
+    {
+      current_page: meters.current_page,
+      next_page: meters.next_page,
+      prev_page: meters.prev_page,
+      total_pages: meters.total_pages,
+      total_count: meters.total_count
+    }
   end
 
   def meters_by_division
@@ -196,12 +210,22 @@ class V1::MetersController < ApplicationController
 
   # PATCH/PUT /v1/meters/:id
   def update
-    if @meter.update(meter_params)
+    if meter_params[:image].present?
+      @meter.image.attach(meter_params[:image])
+    end
+    
+    if @meter.update(meter_params.except(:image))
+      if @meter.image.attached?
+        image_url = url_for(@meter.image)
+        @meter.update(PICTURE_UPLOAD: image_url)
+      end
       render json: @meter, status: :ok
     else
-      render json: @meter.errors, status: :unprocessable_entity
+      render json: { errors: @meter.errors.full_messages }, status: :unprocessable_entity
     end
   end
+  
+  
 
   # DELETE /v1/meters/:id
   def destroy

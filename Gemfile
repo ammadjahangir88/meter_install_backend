@@ -34,13 +34,13 @@ gem "bootsnap", require: false
 gem 'pry', '~> 0.10.3'
 gem 'faker', '~> 2.18', require: false
 gem 'devise-jwt'
-gem 'will_paginate'
+
 
 gem 'prawn'
 gem 'gruff'
 gem 'roo'
 gem 'roo-xls'  # For handling .xls files specifically
-
+gem 'kaminari'
 gem 'jsonapi-serializer'
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
