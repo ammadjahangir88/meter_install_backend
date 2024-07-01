@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_10_091757) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_25_155157) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -111,6 +111,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_10_091757) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id"
+    t.string "PREVIOUS_METER_PICTURE"
     t.index ["REF_NO"], name: "index_meters_on_REF_NO", unique: true
     t.index ["subdivision_id"], name: "index_meters_on_subdivision_id"
     t.index ["user_id"], name: "index_meters_on_user_id"

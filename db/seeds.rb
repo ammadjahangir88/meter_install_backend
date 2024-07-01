@@ -40,7 +40,6 @@ meter_index = 1000
         SAN_LOAD: rand(50..500).to_f,
         CONSUMER_NAME: "Customer #{meter_index}",
         CONSUMER_ADDRESS: "Street #{i}, City",
-        QC_CHECK: [true, false].sample,
         APPLICATION_NO: "APP#{meter_index}",
         GREEN_METER: ["Yes", "No"].sample,
         TELCO: "Telecom Company",

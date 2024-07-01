@@ -45,7 +45,7 @@ class MeterReportService
       subdivision = Subdivision.find(@context_params[:subdivision_id])
       pdf.text "Subdivision: #{subdivision.name}", size: 12
     end
-   binding.pry
+ 
     # Display the date range if available
     from_date = @context_params[:from_date]
     to_date = @context_params[:to_date]

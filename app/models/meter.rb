@@ -2,12 +2,14 @@ class Meter < ApplicationRecord
   belongs_to :subdivision
   belongs_to :user, optional: true
   has_one_attached :image
+  has_one_attached :picture
+
   paginates_per 20
-  validates  :REF_NO, presence: true
-  # validates :NEW_METER_NUMBER, presence: true, uniqueness: true
+
   validates :REF_NO, presence: true, uniqueness: true
 
   has_one :inspection, dependent: :destroy
+
   # Define CSV headers
   def self.csv_headers
     [
@@ -18,7 +20,8 @@ class Meter < ApplicationRecord
       "CUMULATIVE_MDI_T1", "CUMULATIVE_MDI_T2", "CUMULATIVE_MDI_TOTAL",
       "LONGITUDE", "LATITUDE", "NEW_METER_READING", "OLD_METER_READING",
       "CONNECTION_TYPE", "SAN_LOAD", "BILL_MONTH", "METER_TYPE", "KWH_MF", "TELCO", "SIM_NO",
-      "SIGNAL_STRENGTH", "CONSUMER_NAME", "CONSUMER_ADDRESS", "PICTURE_UPLOAD"
+      "SIGNAL_STRENGTH", "CONSUMER_NAME", "CONSUMER_ADDRESS", "PICTURE_UPLOAD",
+      "PREVIOUS_METER_PICTURE"
     ]
   end
 
@@ -32,8 +35,12 @@ class Meter < ApplicationRecord
       cumulative_mdi_t1, cumulative_mdi_t2, cumulative_mdi_total,
       longitude, latitude, new_meter_reading, old_meter_reading,
       connection_type, san_load, formatted_bill_month, meter_type, kwh_mf, telco, sim_no,
-      signal_strength, consumer_name, consumer_address, picture_upload
+      signal_strength, consumer_name, consumer_address, picture_upload,
+      previous_meter_picture
     ]
+  end
+  def previous_meter_picture
+    self[:PREVIOUS_METER_PICTURE]
   end
 
   # Define helper methods for each attribute

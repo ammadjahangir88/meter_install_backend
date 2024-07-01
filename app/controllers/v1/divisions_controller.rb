@@ -10,10 +10,48 @@
           end
           render json: @divisions
         end
+        def disco_dashboard
+          discos = Disco.all
       
+          disco_data = discos.map do |disco|
+            {
+              id: disco.id,
+              name: disco.name,
+              value: disco.meters.count
+            }
+          end
+      
+          render json: { discos: disco_data }, status: :ok
+        end
         # GET /v1/divisions/:id
         def show
-          render json: @division, status: :ok
+          @division = Division.find(params[:id])
+      
+          subdivisions_data = @division.subdivisions.includes(:meters).map do |subdivision|
+            {
+              id: subdivision.id,
+              name: subdivision.name,
+              value: subdivision.meters.count
+            }
+          end
+          # Calculate additional metrics for meters in the region
+          total_meters =  @division.meters.count
+          meters_installed =  @division.meters.where.not(user_id: nil).count
+          meters_qc_done = @division.meters.joins(:inspection).count
+          meters_qc_ok = @division.meters.joins(:inspection).where(inspections: { meter_type_ok: true, display_verification_ok: true, installation_location_ok: true, wiring_connection_ok: true, sealing_ok: true, documentation_ok: true, compliance_assurance_ok: true }).count
+          meters_qc_remaining =  @division.meters.where.not(user_id: nil).left_outer_joins(:inspection).where(inspections: { id: nil }).count
+          meters_to_be_installed = total_meters - meters_installed
+      
+          render json: {
+                division: @division,
+                subdivisionsData:  subdivisions_data,
+                totalMeters: total_meters,
+                metersInstalled: meters_installed,
+                metersQCDone: meters_qc_done,
+                metersQCOK: meters_qc_ok,
+                metersQCRemaining: meters_qc_remaining,
+                metersToBeInstalled: meters_to_be_installed
+              }, status: :ok
         end
         def meters
           division = Division.find(params[:id])

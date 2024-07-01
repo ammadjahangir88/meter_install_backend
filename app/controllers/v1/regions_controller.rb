@@ -12,11 +12,37 @@
             render json: @regions
         end
     
-        # GET /v1/regions/:id
         def show
-        render json: @region, status: :ok
-        end
-    
+            @region = Region.find(params[:id])
+          
+            divisions_data = @region.divisions.includes(:meters).map do |division|
+              {
+                id: division.id,
+                name: division.name,
+                value: division.meters.count
+              }
+            end
+          
+            # Calculate additional metrics for meters in the region
+            total_meters = @region.meters.count
+            meters_installed = @region.meters.where.not(user_id: nil).count
+            meters_qc_done = @region.meters.joins(:inspection).count
+            meters_qc_ok = @region.meters.joins(:inspection).where(inspections: { meter_type_ok: true, display_verification_ok: true, installation_location_ok: true, wiring_connection_ok: true, sealing_ok: true, documentation_ok: true, compliance_assurance_ok: true }).count
+            meters_qc_remaining = @region.meters.where.not(user_id: nil).left_outer_joins(:inspection).where(inspections: { id: nil }).count
+            meters_to_be_installed = total_meters - meters_installed
+          
+        
+            render json: {
+                region: @region,
+                divisionsData:  divisions_data,
+                totalMeters: total_meters,
+                metersInstalled: meters_installed,
+                metersQCDone: meters_qc_done,
+                metersQCOK: meters_qc_ok,
+                metersQCRemaining: meters_qc_remaining,
+                metersToBeInstalled: meters_to_be_installed
+              }, status: :ok
+          end
         # POST /v1/regions
     def create
         

@@ -1,6 +1,6 @@
 # app/controllers/inspections_controller.rb
 class V1::InspectionsController < ApplicationController
-    before_action :set_inspection, only: %i[show update destroy]
+    before_action :set_inspection, only: %i[ update destroy]
     
     def index
       @inspections = Inspection.all
@@ -8,12 +8,13 @@ class V1::InspectionsController < ApplicationController
     end
   
     def show
+     
       @inspection = Inspection.find_by(meter_id: params[:id])
       render json: @inspection
     end
   
     def create
-      binding.pry
+
       @inspection = Inspection.new(inspection_params)
       @inspection.user=@current_user
       if @inspection.save

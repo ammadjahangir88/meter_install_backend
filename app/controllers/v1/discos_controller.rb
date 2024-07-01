@@ -1,22 +1,16 @@
 class V1::DiscosController < ApplicationController
     before_action :set_disco, only: [:show, :update, :destroy]
-    
+    before_action :set_pagination_params, only: [:meters_list]
+
     # GET /v1/discos
     def index
-      discos = Rails.cache.fetch("all_discos", expires_in: 12.hours) do
-        Disco.includes(regions: { divisions: { subdivisions: :meters } }).all
-      end
-      render json: discos, include: { 
-        regions: { 
-          include: { 
+      discos = Disco.includes(regions: { divisions: :subdivisions }).all
+      render json: discos, include: {
+        regions: {
+          include: {
             divisions: {
               include: {
                 subdivisions: {
-                  include: {
-                    meters: {
-                      except: [:created_at, :updated_at, :subdivision_id]
-                    }
-                  },
                   except: [:created_at, :updated_at, :division_id]
                 }
               },
@@ -26,9 +20,84 @@ class V1::DiscosController < ApplicationController
           except: [:created_at, :updated_at, :disco_id]
         }
       }
+    end
+  
+    def meters_list
+      
+      subdivision_id = params[:subdivision_id]
+      division_id = params[:division_id]
+      region_id = params[:region_id]
+      disco_id = params[:disco_id]
+      meter_no = params[:meter_no]
+      ref_no = params[:ref_no]
+      connection_type = params[:connection_type]
+      telco = params[:telco]
+      status = params[:status]
+    
+      meters = if subdivision_id
+                 Subdivision.find(subdivision_id).meters
+               elsif division_id
+                 Division.find(division_id).meters
+               elsif region_id
+                 Region.find(region_id).meters
+               elsif disco_id
+                 Disco.find(disco_id).meters
+               else
+                 Meter.all
+               end
+    
+      meters = meters.where("NEW_METER_NUMBER LIKE ?", "%#{meter_no}%") if meter_no.present?
+      meters = meters.where("REF_NO LIKE ?", "%#{ref_no}%") if ref_no.present?
+      meters = meters.where("CONNECTION_TYPE = ?", connection_type) if connection_type.present?
+      meters = meters.where("TELCO = ?", telco) if telco.present?
+      meters = meters.where("METER_STATUS = ?", status) if status.present?
+    
+      meters = meters.page(params[:page]).per(params[:per_page])
+    
+      render json: {
+        meters: meters.as_json(except: [:created_at, :updated_at, :subdivision_id]),
+        total_pages: meters.total_pages,
+        current_page: meters.current_page
+      }
+    end
+  
+  #   def meters
+  #     entity_type = params[:entity_type]
+  #     entity_id = params[:entity_id]
+  #     page = params[:page] || 1
+  #     per_page = params[:per_page] || 20
+  
+  #     meters = case entity_type
+  #              when 'disco'
+  #                Disco.find(entity_id).meters.page(page).per(per_page)
+  #              when 'region'
+  #                Region.find(entity_id).meters.page(page).per(per_page)
+  #              when 'division'
+  #                Division.find(entity_id).meters.page(page).per(per_page)
+  #              when 'subdivision'
+  #                Subdivision.find(entity_id).meters.page(page).per(per_page)
+  #              else
+  #                []
+  #              end
+  
+  #     render json: meters, except: [:created_at, :updated_at, :subdivision_id]
+  #   end
+  # end
+    
+  def disco_dashboard
+
+    discos = Disco.all
+   
+    disco_data = discos.map do |disco|
+      {
+        id: disco.id,
+        name: disco.name,
+        value: disco.meters.count
+      }
+    end
+
+    render json: { discos: disco_data }, status: :ok
   end
-    
-    
   def all_discos
     @discos=Disco.all
     # @division=Division.all
@@ -47,7 +116,33 @@ class V1::DiscosController < ApplicationController
   
     # GET /v1/discos/:id
     def show
-      render json: @disco, status: :ok
+      @disco = Disco.find(params[:id])
+      
+      regions_data = @disco.regions.includes(:meters).map do |region|
+        {
+          id: region.id,
+          name: region.name,
+          value: region.meters.count
+        }
+      end
+  
+      total_meters = @disco.meters.count
+      meters_installed = @disco.meters.where.not(user_id: nil).count
+      meters_qc_done = @disco.meters.joins(:inspection).count
+      meters_qc_ok = @disco.meters.joins(:inspection).where(inspections: { meter_type_ok: true, display_verification_ok: true, installation_location_ok: true, wiring_connection_ok: true, sealing_ok: true, documentation_ok: true, compliance_assurance_ok: true }).count
+      meters_qc_remaining = @disco.meters.where.not(user_id: nil).left_outer_joins(:inspection).where(inspections: { id: nil }).count
+      meters_to_be_installed = total_meters - meters_installed
+  
+      render json: {
+        disco: @disco,
+        regionsData: regions_data,
+        totalMeters: total_meters,
+        metersInstalled: meters_installed,
+        metersQCDone: meters_qc_done,
+        metersQCOK: meters_qc_ok,
+        metersQCRemaining: meters_qc_remaining,
+        metersToBeInstalled: meters_to_be_installed
+      }, status: :ok
     end
   
     # POST /v1/discos
@@ -115,7 +210,10 @@ class V1::DiscosController < ApplicationController
         params.require(:disco).permit(:name)
       end
      
-
+      def set_pagination_params
+        params[:page] ||= 1
+        params[:per_page] ||= 15
+      end
   def authenticate_request!
     header = request.headers['Authorization']
     if header && header.split(' ').first == 'JWT'

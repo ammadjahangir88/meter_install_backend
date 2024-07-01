@@ -26,6 +26,9 @@ Rails.application.routes.draw do
         delete "delete_regions"
         delete "delete_divisions"
         delete "delete_subdivisions"
+        get 'meters_list'
+        get 'dashboard', to: 'discos#disco_dashboard'
+        
       end
     end
     resources :inspections do
@@ -36,16 +39,18 @@ Rails.application.routes.draw do
     # Additional routes for discos
     get "all_discos", to: "discos#all_discos"
     get "divisions/:id/meters", to: "divisions#meters", as: 'division_meters'
-
+    get 'dashboard', to: 'discos#disco_dashboard'
     # Meters routes ensuring export and import are correctly handled
     resources :meters do
       collection do
         post 'import'
         post 'export'
+        post 'export1'
         get 'search'
         get 'dashboard'
         delete 'bulk_delete' 
         post 'generate_report' 
+        get 'all_meters'
       end
     end
     get 'meters/generate_meter_report', to: 'meters#generate_report', as: 'generate_meter_report'

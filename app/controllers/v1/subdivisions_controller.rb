@@ -13,7 +13,27 @@
     
       # GET /v1/subdivisions/:id
       def show
-        render json: @subdivision, status: :ok
+        @subdivision = Subdivision.find(params[:id])
+      
+        # Calculate metrics for meters in the subdivision
+        total_meters = @subdivision.meters.count
+        meters_installed = @subdivision.meters.where.not(user_id: nil).count
+        meters_qc_done = @subdivision.meters.joins(:inspection).count
+        meters_qc_ok = @subdivision.meters.joins(:inspection).where(inspections: { meter_type_ok: true, display_verification_ok: true, installation_location_ok: true, wiring_connection_ok: true, sealing_ok: true, documentation_ok: true, compliance_assurance_ok: true }).count
+        meters_qc_remaining = @subdivision.meters.where.not(user_id: nil).left_outer_joins(:inspection).where(inspections: { id: nil }).count
+        meters_to_be_installed = total_meters - meters_installed
+        name=  @subdivision.name
+   
+        render json: {
+         name: name,
+          total_meters: total_meters,
+          meters_installed: meters_installed,
+          meters_qc_done: meters_qc_done,
+          meters_qc_ok: meters_qc_ok,
+          meters_qc_remaining: meters_qc_remaining,
+          meters_to_be_installed: meters_to_be_installed
+              }, status: :ok
+      
       end
     
     # POST /v1/subdivisions
